@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PetChef Revenue</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg:#f6f5f1; --card:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#7a7973; --line:#e4e2db; --grid:#ecebe6;
+    --series-new:#2a78d6; --series-repeat:#eb6834;
+    --good:#0a7a33; --bad:#b3261e; --btn:#0b0b0b; --btn-ink:#fcfcfb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --bg:#121211; --card:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#8f8e87; --line:#2e2d2a; --grid:#262624;
+      --series-new:#3987e5; --series-repeat:#d95926;
+      --good:#5fcf86; --bad:#f28b82; --btn:#f0efec; --btn-ink:#1a1a19;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:16px 16px 48px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  h1 { font-size:20px; margin:0; letter-spacing:-.01em; }
+  .sync { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-2); flex-wrap:wrap; }
+  .sync button { white-space:nowrap; }
+  @media (max-width:520px) { header { align-items:flex-start; } .sync { width:100%; } #syncText { flex:1 1 100%; } }
+  .sync button, .logout button { font:inherit; font-weight:600; border:0; border-radius:9px; padding:9px 14px; cursor:pointer; background:var(--btn); color:var(--btn-ink); }
+  .sync button[disabled] { opacity:.55; cursor:progress; }
+  .logout { margin:0; } .logout button { white-space:nowrap; background:transparent; color:var(--ink-2); padding:9px 4px; font-weight:500; }
+  .sync .err { color:var(--bad); }
+
+  .filters { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; scrollbar-width:none; }
+  .filters button { flex:0 0 auto; font:inherit; font-size:13px; border:1px solid var(--line); background:var(--card); color:var(--ink-2);
+                    border-radius:999px; padding:7px 13px; cursor:pointer; }
+  .filters button.on { background:var(--ink); color:var(--card); border-color:var(--ink); }
+  .custom { display:none; gap:8px; align-items:center; margin:-6px 0 14px; font-size:13px; color:var(--ink-2); flex-wrap:wrap; }
+  .custom.on { display:flex; }
+  .custom input { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); }
+  .range-label { font-size:13px; color:var(--muted); margin:-6px 0 12px; }
+
+  .tiles { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+  @media (min-width:760px) { .tiles { grid-template-columns:repeat(4, minmax(0,1fr)); } }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; min-width:0; }
+  .tile.hero { grid-column:1 / -1; }
+  @media (min-width:760px) { .tile.hero { grid-column:span 2; } }
+  .tile .k { font-size:12.5px; color:var(--ink-2); }
+  .tile .v { font-size:22px; font-weight:650; letter-spacing:-.01em; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .tile.hero .v { font-size:32px; }
+  .tile .s { font-size:12.5px; color:var(--muted); margin-top:2px; font-variant-numeric:tabular-nums; }
+  .up { color:var(--good); } .down { color:var(--bad); }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px; }
+  .card h2 { font-size:15px; margin:0 0 2px; }
+  .card .sub { font-size:12.5px; color:var(--muted); margin:0 0 10px; }
+  .legend { display:flex; gap:14px; font-size:12.5px; color:var(--ink-2); margin-bottom:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .chart-box { position:relative; height:240px; }
+  .chart-box svg { display:block; }
+  .chart-box .hit { cursor:crosshair; }
+  .chart-box .hit:hover { fill:var(--ink); fill-opacity:.04; }
+  .tip { position:absolute; width:170px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 10px;
+         font-size:12.5px; box-shadow:0 4px 16px rgba(0,0,0,.12); pointer-events:none; font-variant-numeric:tabular-nums; }
+  .tip i { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; }
+  .tip .tot { color:var(--ink-2); margin-top:3px; border-top:1px solid var(--line); padding-top:3px; }
+
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums; }
+  th, td { padding:8px 10px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  th { font-weight:600; color:var(--ink-2); font-size:12.5px; }
+  details { font-size:13px; color:var(--ink-2); }
+  details summary { cursor:pointer; color:var(--ink); font-weight:600; }
+  details ul { padding-left:18px; margin:8px 0 0; }
+  .empty { padding:40px 0; text-align:center; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PetChef Revenue</h1>
+    <div class="sync">
+      <span id="syncText">Loading…</span>
+      <button id="syncBtn" type="button">Sync now</button>
+      <form class="logout" method="post" action="/logout"><button type="submit">Sign out</button></form>
+    </div>
+  </header>
+
+  <nav class="filters" id="filters" aria-label="Date range">
+    <button data-r="today">Today</button>
+    <button data-r="yesterday">Yesterday</button>
+    <button data-r="7d">Last 7 days</button>
+    <button data-r="30d">Last 30 days</button>
+    <button data-r="mtd" class="on">This month</button>
+    <button data-r="lastmonth">Last month</button>
+    <button data-r="90d">Last 90 days</button>
+    <button data-r="custom">Custom</button>
+  </nav>
+  <div class="custom" id="custom">
+    <input type="date" id="cFrom"> to <input type="date" id="cTo">
+    <button type="button" id="cApply" class="on" style="font:inherit;border:0;border-radius:8px;padding:6px 12px;background:var(--btn);color:var(--btn-ink);cursor:pointer">Apply</button>
+  </div>
+  <div class="range-label" id="rangeLabel"></div>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="card">
+    <h2>Net revenue by day</h2>
+    <p class="sub">Split by first-ever order vs repeat customer</p>
+    <div class="legend"><span><i style="background:var(--series-new)"></i>New customers</span><span><i style="background:var(--series-repeat)"></i>Repeat customers</span></div>
+    <div class="chart-box" id="daily"></div>
+  </section>
+
+  <section class="card">
+    <h2>Month by month</h2>
+    <p class="sub">Last 13 months · net revenue incl. GST</p>
+    <div class="table-wrap"><table id="monthly"></table></div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>How these numbers are calculated</summary>
+      <ul>
+        <li><b>Net revenue</b>: Shopify's current order total after edits, refunds and returns. Includes GST and shipping. Cancelled and test orders excluded. Dated by order date (IST).</li>
+        <li><b>Ex-GST</b>: net revenue minus the order's current tax.</li>
+        <li><b>Gross</b>: original checkout total of every order placed, including ones later cancelled.</li>
+        <li><b>New vs repeat</b>: an order is "new" if it's that customer's first non-cancelled order ever.</li>
+        <li><b>COD</b>: orders whose payment gateway name matches COD.</li>
+        <li>Won't match Shopify Analytics to the rupee: Shopify books refunds on the refund date; this books them against the original order date. COD orders returned as RTO only drop out once they're cancelled in Shopify.</li>
+      </ul>
+    </details>
+  </section>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

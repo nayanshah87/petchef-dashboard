@@ -1,0 +1,13 @@
+{
+  "name": "petchef-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PetChef internal revenue dashboard (Shopify -> SQLite -> web). No dependencies.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}
