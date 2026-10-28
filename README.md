@@ -9,6 +9,7 @@ No npm dependencies: Node 22 built-ins only (`http`, `node:sqlite`, `fetch`). No
 - New-customer vs repeat revenue (first-ever order = new)
 - COD share, cancellations
 - Daily chart (new vs repeat), 13-month table
+- **Customer Snapshot** tab: new vs returning customers, first vs repeat orders, orders by order number (1st…6th+); filter by day/week/month and all/prepaid/COD
 
 Definitions are on the page under "How these numbers are calculated".
 

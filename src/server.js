@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const auth = require('./auth');
 const { startSync, syncStatus } = require('./sync');
-const { overview, monthly } = require('./metrics');
+const { overview, monthly, customers } = require('./metrics');
 const { scheduleDaily } = require('./scheduler');
 
 const PUB = path.join(__dirname, '..', 'public');
@@ -65,6 +65,10 @@ async function handle(req, res) {
 
   if (p === '/api/overview' && req.method === 'GET') {
     try { return json(res, 200, overview(Object.fromEntries(url.searchParams))); }
+    catch (e) { return json(res, 400, { error: e.message }); }
+  }
+  if (p === '/api/customers' && req.method === 'GET') {
+    try { return json(res, 200, customers(Object.fromEntries(url.searchParams))); }
     catch (e) { return json(res, 400, { error: e.message }); }
   }
   if (p === '/api/monthly' && req.method === 'GET') return json(res, 200, monthly(Math.min(Number(url.searchParams.get('limit')) || 13, 60)));

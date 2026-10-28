@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>PetChef Revenue</title>
+<title>PetChef Dashboard</title>
 <style>
   :root {
     color-scheme: light;
@@ -76,18 +76,40 @@
   details summary { cursor:pointer; color:var(--ink); font-weight:600; }
   details ul { padding-left:18px; margin:8px 0 0; }
   .empty { padding:40px 0; text-align:center; color:var(--muted); }
+
+  .tabs { display:flex; gap:22px; border-bottom:1px solid var(--line); margin:0 0 14px; overflow-x:auto; scrollbar-width:none; }
+  .tabs a { flex:0 0 auto; padding:10px 0; color:var(--ink-2); text-decoration:none; font-weight:600; font-size:14.5px; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tabs a.on { color:var(--ink); border-bottom-color:var(--ink); }
+  .tab[hidden] { display:none; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:0 0 14px; font-size:13px; color:var(--ink-2); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--card); }
+  .seg button { font:inherit; font-size:13px; border:0; background:transparent; color:var(--ink-2); padding:6px 11px; cursor:pointer; }
+  .seg button + button { border-left:1px solid var(--line); }
+  .seg button.on { background:var(--ink); color:var(--card); }
+  .ctl { display:inline-flex; align-items:center; gap:8px; }
+  .card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+  .note { font-size:12.5px; color:var(--muted); margin:8px 0 0; }
+  td.bar-cell { width:30%; min-width:80px; }
+  @media (max-width:640px) { .bar-cell { display:none; } }
+  .hbar { height:8px; border-radius:4px; background:var(--series-repeat); min-width:2px; }
+  .hbar.first { background:var(--series-new); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>PetChef Revenue</h1>
+    <h1>PetChef Dashboard</h1>
     <div class="sync">
       <span id="syncText">Loading…</span>
       <button id="syncBtn" type="button">Sync now</button>
       <form class="logout" method="post" action="/logout"><button type="submit">Sign out</button></form>
     </div>
   </header>
+
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a href="#revenue" data-tab="revenue" class="on">Revenue</a>
+    <a href="#customers" data-tab="customers">Customer Snapshot</a>
+  </nav>
 
   <nav class="filters" id="filters" aria-label="Date range">
     <button data-r="today">Today</button>
@@ -105,34 +127,83 @@
   </div>
   <div class="range-label" id="rangeLabel"></div>
 
+  <div class="tab" id="tab-revenue">
   <section class="tiles" id="tiles"></section>
 
-  <section class="card">
-    <h2>Net revenue by day</h2>
-    <p class="sub">Split by first-ever order vs repeat customer</p>
-    <div class="legend"><span><i style="background:var(--series-new)"></i>New customers</span><span><i style="background:var(--series-repeat)"></i>Repeat customers</span></div>
-    <div class="chart-box" id="daily"></div>
-  </section>
+    <section class="card">
+      <h2>Net revenue by day</h2>
+      <p class="sub">Split by first-ever order vs repeat customer</p>
+      <div class="legend"><span><i style="background:var(--series-new)"></i>New customers</span><span><i style="background:var(--series-repeat)"></i>Repeat customers</span></div>
+      <div class="chart-box" id="daily"></div>
+    </section>
 
-  <section class="card">
-    <h2>Month by month</h2>
-    <p class="sub">Last 13 months · net revenue incl. GST</p>
-    <div class="table-wrap"><table id="monthly"></table></div>
-  </section>
+    <section class="card">
+      <h2>Month by month</h2>
+      <p class="sub">Last 13 months · net revenue incl. GST</p>
+      <div class="table-wrap"><table id="monthly"></table></div>
+    </section>
 
-  <section class="card">
-    <details>
-      <summary>How these numbers are calculated</summary>
-      <ul>
-        <li><b>Net revenue</b>: Shopify's current order total after edits, refunds and returns. Includes GST and shipping. Cancelled and test orders excluded. Dated by order date (IST).</li>
-        <li><b>Ex-GST</b>: net revenue minus the order's current tax.</li>
-        <li><b>Gross</b>: original checkout total of every order placed, including ones later cancelled.</li>
-        <li><b>New vs repeat</b>: an order is "new" if it's that customer's first non-cancelled order ever.</li>
-        <li><b>COD</b>: orders whose payment gateway name matches COD.</li>
-        <li>Won't match Shopify Analytics to the rupee: Shopify books refunds on the refund date; this books them against the original order date. COD orders returned as RTO only drop out once they're cancelled in Shopify.</li>
-      </ul>
-    </details>
-  </section>
+    <section class="card">
+      <details>
+        <summary>How these numbers are calculated</summary>
+        <ul>
+          <li><b>Net revenue</b>: Shopify's current order total after edits, refunds and returns. Includes GST and shipping. Cancelled and test orders excluded. Dated by order date (IST).</li>
+          <li><b>Ex-GST</b>: net revenue minus the order's current tax.</li>
+          <li><b>Gross</b>: original checkout total of every order placed, including ones later cancelled.</li>
+          <li><b>New vs repeat</b>: an order is "new" if it's that customer's first non-cancelled order ever.</li>
+          <li><b>COD</b>: orders whose payment gateway name matches COD.</li>
+          <li>Won't match Shopify Analytics to the rupee: Shopify books refunds on the refund date; this books them against the original order date. COD orders returned as RTO only drop out once they're cancelled in Shopify.</li>
+        </ul>
+      </details>
+    </section>
+  </div>
+
+  <div class="tab" id="tab-customers" hidden>
+    <div class="controls">
+      <span class="ctl">Group by
+        <span class="seg" id="grp"><button data-v="day">Day</button><button data-v="week">Week</button><button data-v="month">Month</button></span></span>
+      <span class="ctl">Payment
+        <span class="seg" id="pay"><button data-v="all" class="on">All</button><button data-v="prepaid">Prepaid</button><button data-v="cod">COD</button></span></span>
+    </div>
+
+    <section class="tiles" id="cTiles"></section>
+
+    <section class="card">
+      <div class="card-head">
+        <div><h2 id="cChartTitle">Customers</h2><p class="sub" id="cChartSub"></p></div>
+        <span class="seg" id="metric"><button data-v="customers" class="on">Customers</button><button data-v="orders">Orders</button><button data-v="revenue">Revenue</button></span>
+      </div>
+      <div class="legend" id="cLegend"></div>
+      <div class="chart-box" id="cChart"></div>
+    </section>
+
+    <section class="card">
+      <h2>Orders by order number</h2>
+      <p class="sub">Which order in each customer's life these were. 1st = new customer.</p>
+      <div class="table-wrap"><table id="seqTable"></table></div>
+      <p class="note" id="unknownNote"></p>
+    </section>
+
+    <section class="card">
+      <h2 id="bucketTitle">By period</h2>
+      <p class="sub">Same filters as above</p>
+      <div class="table-wrap"><table id="bucketTable"></table></div>
+    </section>
+
+    <section class="card">
+      <details>
+        <summary>How new vs returning is counted</summary>
+        <ul>
+          <li><b>New customer</b>: their first-ever non-cancelled order falls in the selected dates.</li>
+          <li><b>Returning customer</b>: ordered in the selected dates, but their first order was earlier.</li>
+          <li><b>First order / repeat order</b>: an order is the customer's 1st, or their 2nd onwards. Someone who places their 1st and 2nd order in the same period is 1 new customer with 1 first order and 1 repeat order. That's why repeat orders can exceed returning customers.</li>
+          <li>Per-day/week/month counts don't add up to the period total: a customer who orders in two different weeks is counted in both weeks but once in the total.</li>
+          <li>The payment filter only looks at orders in the selected dates. A customer's order number always counts all their past orders, COD or prepaid.</li>
+          <li>Guest orders with no customer record are left out of customer counts and shown separately.</li>
+        </ul>
+      </details>
+    </section>
+  </div>
 </div>
 
 <script src="/app.js"></script>
